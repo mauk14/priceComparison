@@ -11,6 +11,10 @@ type Logger struct {
 }
 
 func (l *Logger) LogError(r *http.Request, err error) {
+	if r == nil {
+		l.logger.Error(err.Error())
+		return
+	}
 	l.logger.Error(err.Error(),
 		slog.String("request_method", r.Method),
 		slog.String("request_url", r.URL.String()))

@@ -1,4 +1,4 @@
-package http
+package httpUser
 
 import (
 	"github.com/gin-gonic/gin"
@@ -26,8 +26,7 @@ func setUpRouter() *gin.Engine {
 	return r
 }
 
-func NewApp(userManager useCase.UserManagment) *App {
-	logger := logger2.SetUpLogger()
+func NewApp(userManager useCase.UserManagment, logger *logger2.Logger) *App {
 	return &App{
 		userManager:  userManager,
 		router:       setUpRouter(),

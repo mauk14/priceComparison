@@ -1,0 +1,9 @@
+env: "local"
+postgres_dsn: "postgres://postgres:123456@localhost:5432/priceComp?sslmode=disable"
+timeout: 4s
+idle_timeout: 60s
+userManager: 4000
+notification: 4001
+dataCollection: 4002
+searchManager: 4003
+review: 4004

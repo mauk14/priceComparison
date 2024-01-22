@@ -19,9 +19,13 @@ type userRepository struct {
 	db *pgxpool.Pool
 }
 
+func New(db *pgxpool.Pool) UserRepository {
+	return &userRepository{db: db}
+}
+
 func (u *userRepository) InsertUser(ctx context.Context, user *domain.User) error {
 	query := `
-		Insert into users(name, email, password, activated) 
+		Insert into users(name, email, password_hash, activated) 
 		values($1, $3, $2, $4) 
 		Returning id, created_at`
 
@@ -41,7 +45,7 @@ func (u *userRepository) InsertUser(ctx context.Context, user *domain.User) erro
 
 func (u *userRepository) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
 	query := `
-		Select id, created_at, name, email, password, activated from users 
+		Select id, created_at, name, email, password_hash, activated from users 
 		where email = $1`
 
 	var user domain.User

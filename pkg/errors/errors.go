@@ -33,3 +33,11 @@ func (e *ErrorHandler) ServerErrorResponse(c *gin.Context, err error) {
 	message := "the server encountered a problem and could not process your request"
 	e.ErrorResponse(c, http.StatusInternalServerError, message)
 }
+
+func (e *ErrorHandler) BadRequestResponse(c *gin.Context, err error) {
+	e.ErrorResponse(c, http.StatusBadRequest, err.Error())
+}
+
+func (e *ErrorHandler) FailedValidationResponse(c *gin.Context, errors map[string]string) {
+	e.ErrorResponse(c, http.StatusUnprocessableEntity, errors)
+}
