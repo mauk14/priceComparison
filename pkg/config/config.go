@@ -20,20 +20,6 @@ type Config struct {
 	//HTTPserver  `yaml:"http_server"`
 }
 
-//type HTTPserver struct {
-//	Timeout     time.Duration `yaml:"timeout" env-default:"4s"`
-//	IdleTimeout time.Duration `yaml:"iddle_timeout" env-default:"60s"`
-//	ports       `yaml:"ports"`
-//}
-//
-//type ports struct {
-//	UserManager    int `yaml:"userManager"`
-//	Notification   int `yaml:"notification"`
-//	DataCollection int `yaml:"dataCollection"`
-//	SearchManager  int `yaml:"searchManager"`
-//	Review         int `yaml:"review"`
-//}
-
 func MustLoad() *Config {
 	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
@@ -51,3 +37,17 @@ func MustLoad() *Config {
 
 	return &cfg
 }
+
+//type HTTPserver struct {
+//	Timeout     time.Duration `yaml:"timeout" env-default:"4s"`
+//	IdleTimeout time.Duration `yaml:"iddle_timeout" env-default:"60s"`
+//	ports       `yaml:"ports"`
+//}
+//
+//type ports struct {
+//	UserManager    int `yaml:"userManager"`
+//	Notification   int `yaml:"notification"`
+//	DataCollection int `yaml:"dataCollection"`
+//	SearchManager  int `yaml:"searchManager"`
+//	Review         int `yaml:"review"`
+//}
