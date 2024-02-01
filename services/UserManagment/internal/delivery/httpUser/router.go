@@ -37,6 +37,8 @@ func NewApp(userManager useCase.UserManagment, logger *logger2.Logger) *App {
 
 func (a *App) Route() *gin.Engine {
 	a.router.POST("/users", a.registerUser)
+	a.router.POST("/users/login", a.loginUser)
+	a.router.GET("/users", a.requireAuth, a.fetchUser)
 	a.router.Use(a.recoverPanic())
 	return a.router
 }

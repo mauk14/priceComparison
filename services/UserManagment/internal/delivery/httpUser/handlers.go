@@ -51,3 +51,59 @@ func (a *App) registerUser(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, user)
 
 }
+
+func (a *App) loginUser(c *gin.Context) {
+	var input struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	if err := c.BindJSON(&input); err != nil {
+		a.errorHandler.BadRequestResponse(c, err)
+		return
+	}
+
+	v := validator.New()
+
+	domain.ValidateEmail(v, input.Email)
+	domain.ValidatePasswordPlaintext(v, input.Password)
+
+	if !v.Valid() {
+		a.errorHandler.FailedValidationResponse(c, v.Errors)
+		return
+	}
+
+	token, err := a.userManager.LoginUser(context.Background(), input.Email, input.Password)
+	if err != nil {
+		switch {
+		case errors.Is(err, errorsCFG.ErrRecordNotFound):
+			a.errorHandler.InvalidCredentialsResponse(c)
+			return
+		default:
+			a.errorHandler.ServerErrorResponse(c, err)
+			return
+		}
+	}
+
+	if token == "" {
+		a.errorHandler.InvalidCredentialsResponse(c)
+		return
+	}
+
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie("Authorization", token, 3600*24*30, "", "", false, true)
+
+	c.IndentedJSON(http.StatusCreated, gin.H{
+		"token": token,
+	})
+}
+
+func (a *App) fetchUser(c *gin.Context) {
+	userJson, ok := c.Get("user")
+	if !ok {
+		a.errorHandler.InvalidAuthenticationTokenResponse(c)
+		return
+	}
+	user := userJson.(*domain.User)
+	c.IndentedJSON(http.StatusCreated, user)
+}

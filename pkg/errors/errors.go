@@ -41,3 +41,13 @@ func (e *ErrorHandler) BadRequestResponse(c *gin.Context, err error) {
 func (e *ErrorHandler) FailedValidationResponse(c *gin.Context, errors map[string]string) {
 	e.ErrorResponse(c, http.StatusUnprocessableEntity, errors)
 }
+
+func (e *ErrorHandler) InvalidCredentialsResponse(c *gin.Context) {
+	message := "invalid authentication credentials"
+	e.ErrorResponse(c, http.StatusUnauthorized, message)
+}
+
+func (e *ErrorHandler) InvalidAuthenticationTokenResponse(c *gin.Context) {
+	message := "invalid or missing authentication token"
+	e.ErrorResponse(c, http.StatusUnauthorized, message)
+}
