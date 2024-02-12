@@ -10,6 +10,7 @@ import (
 type Config struct {
 	Env            string        `yaml:"env" env-default:"local"`
 	PostgresDsn    string        `yaml:"postgres_dsn" env-required:"true"`
+	MongoDb_uri    string        `yaml:"mongoDb_uri"`
 	Timeout        time.Duration `yaml:"timeout" env-default:"4s"`
 	IdleTimeout    time.Duration `yaml:"iddle_timeout" env-default:"60s"`
 	UserManager    int           `yaml:"userManager"`
@@ -34,7 +35,6 @@ func MustLoad() *Config {
 	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
 		log.Fatalf("cannot read config: %s", err)
 	}
-
 	return &cfg
 }
 

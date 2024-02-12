@@ -11,6 +11,7 @@ var (
 	ErrDuplicateEmail = errors.New("duplicate email")
 	ErrRecordNotFound = errors.New("record not found")
 	ErrEditConflict   = errors.New("edit conflict")
+	ErrBadUrl         = errors.New("url bad request")
 )
 
 type envelope map[string]any

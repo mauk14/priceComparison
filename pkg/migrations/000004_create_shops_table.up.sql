@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS shops (
+    id bigserial PRIMARY KEY,
+    shopName VARCHAR(255) NOT NULL UNIQUE,
+    link TEXT NOT NULL
+);
