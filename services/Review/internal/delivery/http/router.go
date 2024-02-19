@@ -1,4 +1,4 @@
-package http
+package httpReview
 
 import (
 	"github.com/gin-gonic/gin"

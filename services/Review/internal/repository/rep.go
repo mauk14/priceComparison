@@ -29,3 +29,7 @@ func (r *reviewRepository) GetReview(ctx context.Context, id int64) (*domain.Rev
 	}
 	return &review, nil
 }
+
+func New(db *pgxpool.Pool) ReviewRepository {
+	return &reviewRepository{db: db}
+}
