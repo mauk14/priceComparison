@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"priceComp/services/SearchManager/internal/domain"
+	"strings"
 )
 
 type SearchRepository interface {
-	GetAll(context.Context, string, string, string, string, int, int) ([]*domain.Products, error)
+	GetAll(context.Context, string, string, string, []string, int, int, int, int) ([]*domain.Products, error)
 }
 
 type searchRepository struct {
@@ -19,9 +20,11 @@ func New(db *pgxpool.Pool) SearchRepository {
 	return &searchRepository{db: db}
 }
 
-func (s *searchRepository) GetAll(ctx context.Context, searchKeyword, category, brand, sortBy string, limit, offset int) ([]*domain.Products, error) {
+func (s *searchRepository) GetAll(ctx context.Context, searchKeyword, category, sortBy string, brand []string, limit, offset, priceFrom, priceTo int) ([]*domain.Products, error) {
 	var products []*domain.Products
-	baseQuery := `SELECT prod.product_id, prod.productName, prod.category, prod.brand, prod.description, p.price FROM products prod join prices p on prod.product_id = p.product_id
+	var placeholders []string
+	var params []interface{}
+	baseQuery := `SELECT prod.product_id, prod.productName, prod.category, prod.brand, prod.description, min(p.price), max(p.price) FROM products prod join prices p on prod.product_id = p.product_id
 WHERE 1=1`
 	if searchKeyword != "" {
 		baseQuery += fmt.Sprintf(" AND (productName ILIKE '%%%s%%' OR description ILIKE '%%%s%%')", searchKeyword, searchKeyword)
@@ -29,21 +32,29 @@ WHERE 1=1`
 	if category != "" {
 		baseQuery += fmt.Sprintf(" AND category = '%s'", category)
 	}
-	if brand != "" {
-		baseQuery += fmt.Sprintf(" AND brand = '%s'", brand)
+	if len(brand) != 0 {
+		for i, str := range brand {
+			placeholder := fmt.Sprintf("$%d", i+1)
+			placeholders = append(placeholders, placeholder)
+			params = append(params, str)
+		}
+		baseQuery += fmt.Sprintf(" AND brand in (%s)", strings.Join(placeholders, ","))
 	}
+	baseQuery += " GROUP by prod.product_id"
+	baseQuery += fmt.Sprintf(" HAVING min(p.price) >= %d AND max(p.price) <= %d", priceFrom, priceTo)
 	switch sortBy {
 	case "priceAsc":
-		baseQuery += " ORDER BY price ASC"
+		baseQuery += " ORDER BY min(p.price) ASC"
 	case "priceDesc":
-		baseQuery += " ORDER BY price DESC"
+		baseQuery += " ORDER BY max(p.price) DESC"
 	case "productName":
 		baseQuery += " ORDER BY productname"
 	}
 
 	baseQuery += fmt.Sprintf(" LIMIT %d OFFSET %d", limit, offset)
-
-	rows, err := s.db.Query(ctx, baseQuery)
+	fmt.Println(baseQuery)
+	fmt.Println(params)
+	rows, err := s.db.Query(ctx, baseQuery, params...)
 	if err != nil {
 		return nil, err
 	}
@@ -51,8 +62,8 @@ WHERE 1=1`
 
 	for rows.Next() {
 		var product domain.Products
-		var priceQuery int
-		err := rows.Scan(&product.Product_id, &product.ProductName, &product.Category, &product.Brand, &product.Description, &priceQuery)
+		var priceMin, priceMax int
+		err := rows.Scan(&product.Product_id, &product.ProductName, &product.Category, &product.Brand, &product.Description, &priceMin, &priceMax)
 		if err != nil {
 			return nil, err
 		}
@@ -96,7 +107,7 @@ WHERE 1=1`
 				fmt.Println("here2")
 				return nil, err
 			}
-			err = s.db.QueryRow(ctx, `SELECT shopName, link from shops`).Scan(&price.Shop.ShopName, &price.Shop.Link)
+			err = s.db.QueryRow(ctx, `SELECT shopName, link from shops where id=$1`, price.Shop.Id).Scan(&price.Shop.ShopName, &price.Shop.Link)
 			if err != nil {
 				fmt.Println("here3")
 				return nil, err

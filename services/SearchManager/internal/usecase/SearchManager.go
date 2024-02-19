@@ -7,7 +7,7 @@ import (
 )
 
 type SearchManager interface {
-	ListProducts(context.Context, string, string, string, string, int, int) ([]*domain.Products, error)
+	ListProducts(context.Context, string, string, string, []string, int, int, int, int) ([]*domain.Products, error)
 }
 
 type searchManager struct {
@@ -18,8 +18,8 @@ func New(searchRep repository.SearchRepository) SearchManager {
 	return &searchManager{searchRep: searchRep}
 }
 
-func (s *searchManager) ListProducts(ctx context.Context, searchKeyword, category, brand, sortBy string, limit, offset int) ([]*domain.Products, error) {
-	products, err := s.searchRep.GetAll(ctx, searchKeyword, category, brand, sortBy, limit, offset)
+func (s *searchManager) ListProducts(ctx context.Context, searchKeyword, category, sortBy string, brand []string, limit, offset, priceFrom, priceTo int) ([]*domain.Products, error) {
+	products, err := s.searchRep.GetAll(ctx, searchKeyword, category, sortBy, brand, limit, offset, priceFrom, priceTo)
 	if err != nil {
 		return nil, err
 	}

@@ -113,7 +113,7 @@ func (d *dataCollectionRep) GetProduct(ctx context.Context, id int64) (*domain.P
 			fmt.Println("here2")
 			return nil, err
 		}
-		err = d.db.QueryRow(ctx, `SELECT shopName, link from shops`).Scan(&price.Shop.ShopName, &price.Shop.Link)
+		err = d.db.QueryRow(ctx, `SELECT shopName, link from shops where id=$1`, price.Shop.Id).Scan(&price.Shop.ShopName, &price.Shop.Link)
 		if err != nil {
 			fmt.Println("here3")
 			return nil, err

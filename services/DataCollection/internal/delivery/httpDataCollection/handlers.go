@@ -168,7 +168,7 @@ func (a *App) addPrice(c *gin.Context) {
 
 	v := validator.New()
 	ok := false
-	shops := []string{"dns"}
+	shops := []string{"dns", "kaspi"}
 	for _, s := range shops {
 		if s == input.Shop {
 			ok = true

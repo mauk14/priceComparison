@@ -2,11 +2,13 @@ package useCase
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"priceComp/services/DataCollection/internal/domain"
 	"priceComp/services/DataCollection/internal/repository"
 	"strings"
 	"sync"
+	"time"
 )
 
 type DataCollectionService interface {
@@ -85,7 +87,7 @@ func (d *dataCollectionService) AddPrice(ctx context.Context, shopName string) (
 	if err != nil {
 		return nil, err
 	}
-	shop, err := d.rep.GetShop(ctx, "dns")
+	shop, err := d.rep.GetShop(ctx, shopName)
 	if err != nil {
 		return nil, err
 	}
@@ -107,6 +109,23 @@ func (d *dataCollectionService) AddPrice(ctx context.Context, shopName string) (
 			}(wg, i)
 		}
 		wg.Wait()
+	} else if shopName == "kaspi" {
+		for i := range products {
+			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+			defer cancel()
+			price, err := kaspiParsePrice(ctx, products[i], shop)
+			if err != nil {
+				switch {
+				case strings.Contains(err.Error(), "can't find"):
+					continue
+				case errors.Is(err, context.DeadlineExceeded):
+					continue
+				default:
+					return nil, err
+				}
+			}
+			prices = append(prices, price)
+		}
 	}
 
 	if err2 != nil {
