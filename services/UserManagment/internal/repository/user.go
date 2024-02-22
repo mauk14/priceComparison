@@ -13,6 +13,7 @@ type UserRepository interface {
 	InsertUser(context.Context, *domain.User) error
 	GetByEmail(context.Context, string) (*domain.User, error)
 	UpdateUser(context.Context, *domain.User) error
+	GetById(ctx context.Context, id int64) (*domain.User, error)
 }
 
 type userRepository struct {
@@ -100,4 +101,28 @@ func (u *userRepository) UpdateUser(ctx context.Context, user *domain.User) erro
 		}
 	}
 	return nil
+}
+
+func (u *userRepository) GetById(ctx context.Context, id int64) (*domain.User, error) {
+	query := `
+		Select name, email from users 
+		where id = $1`
+
+	var user domain.User
+
+	err := u.db.QueryRow(ctx, query, id).Scan(
+		&user.Name,
+		&user.Email,
+	)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, pgx.ErrNoRows):
+			return nil, errorsCFG.ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &user, nil
 }

@@ -16,11 +16,16 @@ func (app *App) sendReview(c *gin.Context) {
 		Product_id int64  `json:"product_id"`
 	}
 
+	if err := c.BindJSON(&input); err != nil {
+		app.errorHandler.BadRequestResponse(c, err)
+		return
+	}
+
 	var review domain.Review
 	review.Message = input.Message
 	review.Rating = input.Rating
 	review.User_id = input.User_id
-	review.Product_id = review.Product_id
+	review.Product_id = input.Product_id
 
 	err := app.reviewRep.InsertReview(context.Background(), &review)
 	if err != nil {
@@ -43,4 +48,19 @@ func (app *App) showReview(c *gin.Context) {
 		return
 	}
 	c.IndentedJSON(http.StatusOK, review)
+}
+
+func (app *App) showProductReviews(c *gin.Context) {
+	params := c.Param("id")
+	id, err := strconv.ParseInt(params, 10, 64)
+	if err != nil {
+		app.errorHandler.ServerErrorResponse(c, err)
+		return
+	}
+	reviews, err := app.reviewRep.GetReviewByProduct(context.Background(), id)
+	if err != nil {
+		app.errorHandler.ServerErrorResponse(c, err)
+		return
+	}
+	c.IndentedJSON(http.StatusOK, reviews)
 }

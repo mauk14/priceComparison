@@ -46,7 +46,7 @@ func (app *App) requireAuth(c *gin.Context) {
 			return
 		}
 
-		user, err := app.userManager.UserInfo(context.Background(), claims["sub"].(string))
+		user, err := app.userManager.UserInfo(context.Background(), claims["email"].(string))
 		if err != nil {
 			app.errorHandler.InvalidAuthenticationTokenResponse(c)
 			return
@@ -55,4 +55,9 @@ func (app *App) requireAuth(c *gin.Context) {
 
 		c.Next()
 	}
+}
+
+type userToken struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
 }

@@ -8,6 +8,7 @@ import (
 	errorsCFG "priceComp/pkg/errors"
 	"priceComp/pkg/validator"
 	"priceComp/services/UserManagment/internal/domain"
+	"strconv"
 )
 
 func (a *App) registerUser(c *gin.Context) {
@@ -105,5 +106,20 @@ func (a *App) fetchUser(c *gin.Context) {
 		return
 	}
 	user := userJson.(*domain.User)
+	c.IndentedJSON(http.StatusCreated, user)
+}
+
+func (a *App) fetchUserId(c *gin.Context) {
+	params := c.Param("id")
+	id, err := strconv.ParseInt(params, 10, 64)
+	if err != nil {
+		a.errorHandler.ServerErrorResponse(c, err)
+		return
+	}
+	user, err := a.userManager.UserInfoById(context.Background(), id)
+	if err != nil {
+		a.errorHandler.ServerErrorResponse(c, err)
+		return
+	}
 	c.IndentedJSON(http.StatusCreated, user)
 }

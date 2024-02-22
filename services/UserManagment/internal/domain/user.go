@@ -8,12 +8,12 @@ import (
 )
 
 type User struct {
-	Id         int64
-	Name       string
-	Password   password
-	Email      string
-	Activated  bool
-	Created_At time.Time
+	Id         int64     `json:"id"`
+	Name       string    `json:"name"`
+	Password   password  `json:"password"`
+	Email      string    `json:"email"`
+	Activated  bool      `json:"activated"`
+	Created_At time.Time `json:"created_at"`
 }
 
 type password struct {

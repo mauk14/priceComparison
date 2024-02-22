@@ -21,7 +21,7 @@ func main() {
 
 	app := httpReview.NewApp(repository.New(db), logger)
 
-	err = app.Route().Run(fmt.Sprintf(":%d", cfg.DataCollection))
+	err = app.Route().Run(fmt.Sprintf(":%d", cfg.Review))
 	if err != nil {
 		logger.LogError(nil, err)
 		return

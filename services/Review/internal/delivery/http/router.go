@@ -38,6 +38,7 @@ func NewApp(reviewRep repository.ReviewRepository, logger *logger2.Logger) *App 
 func (a *App) Route() *gin.Engine {
 	a.router.POST("/review", a.sendReview)
 	a.router.GET("/review/:id", a.showReview)
+	a.router.GET("/product/:id/review", a.showProductReviews)
 	a.router.Use(a.recoverPanic())
 	return a.router
 }

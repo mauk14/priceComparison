@@ -14,6 +14,7 @@ type UserManagment interface {
 	RegisterUser(context.Context, *domain.User) error
 	LoginUser(context.Context, string, string) (string, error)
 	UserInfo(context.Context, string) (*domain.User, error)
+	UserInfoById(ctx context.Context, id int64) (*domain.User, error)
 	//ActivateUser(context.Context)
 }
 
@@ -39,9 +40,12 @@ func (u *userManager) LoginUser(ctx context.Context, email string, passwordPlain
 	if !matches {
 		return "", nil
 	}
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": user.Email,
-		"exp": time.Now().Add(time.Hour * 24 * 30).Unix(),
+		"userId": user.Id,
+		"name":   user.Name,
+		"email":  user.Email,
+		"exp":    time.Now().Add(time.Hour * 24 * 30).Unix(),
 	})
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("SECRET")))
@@ -56,6 +60,14 @@ func (u *userManager) LoginUser(ctx context.Context, email string, passwordPlain
 
 func (u *userManager) UserInfo(ctx context.Context, email string) (*domain.User, error) {
 	user, err := u.repository.GetByEmail(ctx, email)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (u *userManager) UserInfoById(ctx context.Context, id int64) (*domain.User, error) {
+	user, err := u.repository.GetById(ctx, id)
 	if err != nil {
 		return nil, err
 	}
