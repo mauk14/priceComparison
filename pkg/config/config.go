@@ -18,6 +18,7 @@ type Config struct {
 	DataCollection int           `yaml:"dataCollection"`
 	SearchManager  int           `yaml:"searchManager"`
 	Review         int           `yaml:"review"`
+	Favorites      int           `yaml:"favorites"`
 	//HTTPserver  `yaml:"http_server"`
 }
 

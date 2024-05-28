@@ -79,7 +79,8 @@ func (u *userRepository) UpdateUser(ctx context.Context, user *domain.User) erro
 	query := `
 		UPDATE users
 		SET name = $1, email = $2, password_hash = $3, activated = $4
-		WHERE id = $5`
+		WHERE id = $5
+		RETURNING id`
 
 	args := []any{
 		user.Name,
@@ -89,7 +90,7 @@ func (u *userRepository) UpdateUser(ctx context.Context, user *domain.User) erro
 		user.Id,
 	}
 
-	err := u.db.QueryRow(ctx, query, args...).Scan()
+	err := u.db.QueryRow(ctx, query, args...).Scan(&user.Id)
 	if err != nil {
 		switch {
 		case err.Error() == `ОШИБКА: повторяющееся значение ключа нарушает ограничение уникальности "users_email_key" (SQLSTATE 23505)`:

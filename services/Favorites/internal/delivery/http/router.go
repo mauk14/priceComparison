@@ -1,14 +1,14 @@
-package httpUser
+package httpFavorites
 
 import (
 	"github.com/gin-gonic/gin"
 	errorsCFG "priceComp/pkg/errors"
 	logger2 "priceComp/pkg/logger"
-	"priceComp/services/UserManagment/internal/useCase"
+	"priceComp/services/Favorites/internal/repository"
 )
 
 type App struct {
-	userManager  useCase.UserManagment
+	favoritesRep repository.FavoritesRep
 	router       *gin.Engine
 	logger       *logger2.Logger
 	errorHandler *errorsCFG.ErrorHandler
@@ -26,9 +26,9 @@ func setUpRouter() *gin.Engine {
 	return r
 }
 
-func NewApp(userManager useCase.UserManagment, logger *logger2.Logger) *App {
+func NewApp(reviewRep repository.FavoritesRep, logger *logger2.Logger) *App {
 	return &App{
-		userManager:  userManager,
+		favoritesRep: reviewRep,
 		router:       setUpRouter(),
 		logger:       logger,
 		errorHandler: errorsCFG.New(logger),
@@ -36,12 +36,9 @@ func NewApp(userManager useCase.UserManagment, logger *logger2.Logger) *App {
 }
 
 func (a *App) Route() *gin.Engine {
-	a.router.POST("/users", a.registerUser)
-	a.router.POST("/users/login", a.loginUser)
-	a.router.GET("/users", a.requireAuth, a.fetchUser)
-	a.router.GET("/users/:id", a.fetchUserId)
-	a.router.POST("/users/change-pass", a.ChangePass)
-	a.router.POST("/users/change", a.ChangeInfo)
+	a.router.POST("/favorites", a.addFavorites)
+	a.router.GET("/favorites/:id", a.showFavorites)
+	a.router.DELETE("/favorites/:id", a.deleteFavorites)
 	a.router.Use(a.recoverPanic())
 	return a.router
 }

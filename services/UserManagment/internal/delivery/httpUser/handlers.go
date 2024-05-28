@@ -123,3 +123,61 @@ func (a *App) fetchUserId(c *gin.Context) {
 	}
 	c.IndentedJSON(http.StatusCreated, user)
 }
+
+func (a *App) ChangePass(c *gin.Context) {
+	var input struct {
+		Email       string `json:"email"`
+		OldPassword string `json:"old_password"`
+		NewPassword string `json:"new_password"`
+	}
+	if err := c.BindJSON(&input); err != nil {
+		a.errorHandler.BadRequestResponse(c, err)
+		return
+	}
+	v := validator.New()
+
+	err := a.userManager.ChangePassword(context.Background(), input.Email, input.OldPassword, input.NewPassword)
+	if err != nil {
+		switch {
+		case errors.Is(err, errorsCFG.ErrNotCorrectPassword):
+			v.AddError("old_password", "Old password is not correct")
+			a.errorHandler.FailedValidationResponse(c, v.Errors)
+		default:
+			a.errorHandler.ServerErrorResponse(c, err)
+		}
+		return
+	}
+
+	var output struct {
+		Message string `json:"message"`
+	}
+	output.Message = "Password success changed"
+	c.IndentedJSON(http.StatusOK, output)
+}
+
+func (a *App) ChangeInfo(c *gin.Context) {
+	var input struct {
+		EmailOld  string `json:"emailOld"`
+		Email     string `json:"email"`
+		Name      string `json:"name"`
+		Activated bool   `json:"activated"`
+	}
+
+	if err := c.BindJSON(&input); err != nil {
+		a.errorHandler.BadRequestResponse(c, err)
+		return
+	}
+
+	token, err := a.userManager.ChangePersonalInfo(context.Background(), input.EmailOld, input.Email, input.Name, input.Activated)
+	if err != nil {
+		a.errorHandler.ServerErrorResponse(c, err)
+		return
+	}
+
+	c.SetSameSite(http.SameSiteLaxMode)
+	c.SetCookie("Authorization", token, 3600*24*30, "", "", false, true)
+
+	c.IndentedJSON(http.StatusCreated, gin.H{
+		"token": token,
+	})
+}

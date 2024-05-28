@@ -7,3 +7,4 @@ notification: 4001
 dataCollection: 4002
 searchManager: 4003
 review: 4004
+favorites: 4005
